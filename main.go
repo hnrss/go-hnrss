@@ -13,8 +13,11 @@ const algoliaUrl = "https://hn.algolia.com/api/v1/search_by_date?"
 
 type AlgoliaResponse struct {
 	Hits []struct {
-		Title string
-		URL   string
+		ObjectID  string
+		Title     string
+		URL       string
+		Author    string
+		CreatedAt string `json:"created_at"`
 	}
 }
 
@@ -66,6 +69,8 @@ func Prepare() gin.HandlerFunc {
 			params.Set("hitsPerPage", count)
 		}
 
+		c.Set("request_url", algoliaUrl+params.Encode())
+
 		// TODO(ejd): put together a smarter HTTP client
 		resp, err := http.Get(algoliaUrl + params.Encode())
 		if err != nil {
@@ -98,10 +103,14 @@ func Prepare() gin.HandlerFunc {
 
 func Newest(c *gin.Context) {
 	c.Set("req_tags", "(story,poll)")
+	c.Set("output_title", "Hacker News: Newest")
+	c.Set("output_link", "https://news.ycombinator.com/newest")
 }
 
 func Frontpage(c *gin.Context) {
 	c.Set("req_tags", "front_page")
+	c.Set("output_title", "Hacker News: Front Page")
+	c.Set("output_link", "https://news.ycombinator.com/")
 }
 
 func main() {
