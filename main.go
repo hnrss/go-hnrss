@@ -1,47 +1,122 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"io"
-	"log"
+	"encoding/json"
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-const (
-	algoliaEndpoint = "https://hn.algolia.com/api/v1/search_by_date"
-)
+const algoliaUrl = "https://hn.algolia.com/api/v1/search_by_date?"
 
-///////////////////////////////////////////////////////////////////////////
-
-func Newest(w http.ResponseWriter, r *http.Request) {
-	qs := r.URL.Query()
-	opts := make(url.Values)
-	opts.Add("tags", "(story,poll)")
-
-	if query := qs.Get("q"); query != "" {
-		opts.Add("query", query)
+type AlgoliaResponse struct {
+	Hits []struct {
+		Title string
+		URL   string
 	}
+}
 
-	var nf []string
-	if points := qs.Get("points"); points != "" {
-		nf = append(nf, "points>="+points)
-	}
-	if comments := qs.Get("comments"); comments != "" {
-		nf = append(nf, "num_comments>="+comments)
-	}
-	if len(nf) > 0 {
-		opts.Add("numericFilters", strings.Join(nf, ","))
-	}
+func Prepare() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Extract out all the available query parameters
+		c.Set("req_query", c.Query("q"))
+		c.Set("req_id", c.Query("id"))
+		c.Set("req_points", c.Query("points"))
+		c.Set("req_comments", c.Query("comments"))
+		c.Set("req_search_attrs", c.DefaultQuery("search_attrs", "title"))
+		c.Set("req_count", c.DefaultQuery("count", "25"))
+		c.Set("resp_link", c.DefaultQuery("link", "url"))
+		c.Set("resp_description", c.DefaultQuery("description", "on"))
+		c.Set("resp_format", c.DefaultQuery("format", "rss"))
 
-	io.WriteString(w, algoliaEndpoint+"?"+opts.Encode()+"\n")
+		// Build the query string for Algolia
+		params := make(url.Values)
+
+		// Attach tags
+		params.Set("tags", c.GetString("req_tags"))
+
+		// Attach query
+		// TODO(ejd): try query[] for OR?
+		if query := c.GetString("req_query"); query != "" {
+			params.Set("query", query)
+		}
+
+		// Attach points and/or comments filter
+		var filters []string
+		if points := c.GetString("req_points"); points != "" {
+			filters = append(filters, "points>="+points)
+		}
+		if comments := c.GetString("req_comments"); comments != "" {
+			filters = append(filters, "num_comments>="+comments)
+		}
+		if len(filters) > 0 {
+			params.Set("numericFilters", strings.Join(filters, ","))
+		}
+
+		// Attach search attributes
+		if search_attrs := c.GetString("req_search_attrs"); search_attrs != "" && search_attrs != "default" {
+			params.Set("restrictSearchableAttributes", search_attrs)
+		}
+
+		// Attach count
+		// TODO(ejd): cap this at 100
+		if count := c.GetString("req_count"); count != "" {
+			params.Set("hitsPerPage", count)
+		}
+
+		// TODO(ejd): put together a smarter HTTP client
+		resp, err := http.Get(algoliaUrl + params.Encode())
+		if err != nil {
+			c.String(http.StatusBadGateway, "Error getting search results from Algolia")
+		}
+		defer resp.Body.Close()
+
+		var parsed AlgoliaResponse
+		decoder := json.NewDecoder(resp.Body)
+		if err := decoder.Decode(&parsed); err != nil {
+			c.String(http.StatusBadGateway, "Invalid JSON received from Algolia")
+		}
+
+		switch c.GetString("resp_format") {
+		case "json":
+			OutputJsonFeed(c)
+		case "atom":
+			OutputAtom(c)
+		case "rss":
+			OutputRSS(parsed, c)
+		default:
+			c.String(http.StatusBadRequest, "Format must be one of: 'json', 'atom', or 'rss'")
+		}
+
+		c.Next()
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
+func Newest(c *gin.Context) {
+	c.Set("req_tags", "(story,poll)")
+}
+
+func Frontpage(c *gin.Context) {
+	c.Set("req_tags", "front_page")
+}
+
 func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/newest", Newest)
-	log.Fatal(http.ListenAndServe(":9001", r))
+	r := gin.Default()
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
+
+	r.GET("/newest", Newest, Prepare())
+	r.GET("/frontpage", Frontpage, Prepare())
+
+	r.GET("/favicon.ico", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "https://edavis.github.io/hnrss/")
+	})
+
+	r.Run()
 }
