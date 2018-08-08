@@ -17,6 +17,11 @@ func runner(c *gin.Context, sp SearchParams, op OutputParams) {
 	}
 	c.Header("X-Algolia-URL", algoliaURL+sp.Values().Encode())
 
+	err = c.ShouldBindQuery(&op)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Error parsing the request")
+	}
+
 	op.Output(c, results)
 }
 
