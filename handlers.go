@@ -5,33 +5,7 @@ import (
 	"net/http"
 )
 
-func Newest(c *gin.Context) {
-	var sp SearchParams
-	sp.Tags = "(story,poll)"
-	err := c.ShouldBindQuery(&sp)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
-	}
-
-	results, err := GetResults(sp.Values())
-	if err != nil {
-		c.String(http.StatusBadRequest, err.Error())
-	}
-
-	var op OutputParams
-	err = c.ShouldBindQuery(&op)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
-	}
-	op.Title = "Hacker News: Newest"
-	op.Link = "https://news.ycombinator.com/newest"
-	op.Output(c, results)
-}
-
-func NewComments(c *gin.Context) {
-	var sp SearchParams
-	sp.Tags = "comment"
-	sp.SearchAttributes = "default"
+func runner(c *gin.Context, sp SearchParams, op OutputParams) {
 	err := c.ShouldBindQuery(&sp)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error parsing the request")
@@ -43,12 +17,32 @@ func NewComments(c *gin.Context) {
 	}
 	c.Header("X-Algolia-URL", algoliaURL+sp.Values().Encode())
 
-	var op OutputParams
-	err = c.ShouldBindQuery(&op)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
-	}
+	op.Output(c, results)
+}
+
+func Newest(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "(story,poll)"
+	op.Title = "Hacker News: Newest"
+	op.Link = "https://news.ycombinator.com/newest"
+
+	runner(c, sp, op)
+}
+
+func NewComments(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "comment"
+	sp.SearchAttributes = "default"
 	op.Title = "Hacker News: New Comments"
 	op.Link = "https://news.ycombinator.com/newcomments"
-	op.Output(c, results)
+
+	runner(c, sp, op)
 }
