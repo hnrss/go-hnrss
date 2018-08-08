@@ -2,123 +2,200 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
-const algoliaUrl = "https://hn.algolia.com/api/v1/search_by_date?"
+const algoliaURL = "https://hn.algolia.com/api/v1/search_by_date?"
+
+type OutputParams struct {
+	Title       string
+	Link        string
+	Description string `form:"description"`
+	LinkTo      string `form:"link"`
+	Format      string `form:"format"`
+}
+
+func (op OutputParams) Output(c *gin.Context, results *AlgoliaResponse) {
+	fmt := op.Format
+	if fmt == "" {
+		fmt = "rss"
+	}
+
+	switch fmt {
+	case "rss":
+		op.RSS(c, results)
+	}
+}
+
+func (op OutputParams) getURL(hit AlgoliaHit, permalink string) string {
+	linkTo := op.LinkTo
+	if linkTo == "" {
+		linkTo = "url"
+	}
+
+	switch {
+	case linkTo == "url" && hit.URL != "":
+		return hit.URL
+	case linkTo == "url" && hit.URL == "":
+		return permalink
+	case linkTo == "comments":
+		return permalink
+	default:
+		return permalink
+	}
+}
+
+func (op OutputParams) getDescription(hit AlgoliaHit) string {
+	if hit.isComment() {
+		return hit.CommentText
+	} else {
+		return "default description"
+	}
+}
+
+func (op OutputParams) getTitle(hit AlgoliaHit) string {
+	if hit.isComment() {
+		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, hit.StoryTitle)
+	} else {
+		return hit.Title
+	}
+}
+
+func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
+	rss := RSS{
+		Version:       "2.0",
+		Title:         op.Title,
+		Link:          op.Link,
+		Description:   "Hacker News RSS",
+		Webmaster:     "https://github.com/edavis/go-hnrss/issues",
+		Docs:          "https://edavis.github.io/go-hnrss/",
+		Generator:     "https://github.com/edavis/go-hnrss",
+		LastBuildDate: time.Now().UTC().Format(time.RFC1123Z),
+	}
+
+	for _, hit := range results.Hits {
+		permalink := "https://news.ycombinator.com/item?id=" + hit.ObjectID
+		createdAt, _ := time.Parse("2006-01-02T15:04:05.000Z", hit.CreatedAt)
+		item := RSSItem{
+			Title:       op.getTitle(hit),
+			Link:        op.getURL(hit, permalink),
+			Description: op.getDescription(hit),
+			Author:      hit.Author,
+			Comments:    permalink,
+			Published:   createdAt.Format(time.RFC1123Z),
+			Permalink:   RSSPermalink{permalink, "false"},
+		}
+		rss.Items = append(rss.Items, item)
+	}
+
+	c.XML(http.StatusOK, rss)
+}
+
+type SearchParams struct {
+	Tags             string
+	Query            string `form:"q"`
+	Points           string `form:"points"`
+	Comments         string `form:"comments"`
+	SearchAttributes string `form:"search_attrs"`
+	Count            string `form:"count"`
+}
+
+func (sp *SearchParams) numericFilters() string {
+	var filters []string
+	if sp.Points != "" {
+		filters = append(filters, "points>="+sp.Points)
+	}
+	if sp.Comments != "" {
+		filters = append(filters, "num_comments>="+sp.Comments)
+	}
+	return strings.Join(filters, ",")
+}
+
+// Encode transforms the search options into an Algolia search querystring
+func (sp *SearchParams) Values() url.Values {
+	params := make(url.Values)
+
+	if sp.Query != "" {
+		params.Set("query", sp.Query)
+	}
+
+	if f := sp.numericFilters(); f != "" {
+		params.Set("numericFilters", f)
+	}
+
+	searchAttrs := sp.SearchAttributes
+	if searchAttrs == "" {
+		searchAttrs = "title"
+	}
+	if searchAttrs != "default" {
+		params.Set("restrictSearchableAttributes", searchAttrs)
+	}
+
+	if sp.Count != "" {
+		params.Set("hitsPerPage", sp.Count)
+	}
+
+	if sp.Tags != "" {
+		params.Set("tags", sp.Tags)
+	}
+
+	return params
+}
+
+type AlgoliaHit struct {
+	ObjectID    string
+	Title       string
+	URL         string
+	Author      string
+	CreatedAt   string   `json:"created_at"`
+	StoryTitle  string   `json:"story_title"`
+	CommentText string   `json:"comment_text"`
+	Tags        []string `json:"_tags"`
+}
+
+func (hit AlgoliaHit) isComment() bool {
+	for _, tag := range hit.Tags {
+		if tag == "comment" {
+			return true
+		}
+	}
+	return false
+}
 
 type AlgoliaResponse struct {
-	Hits []struct {
-		ObjectID  string
-		Title     string
-		URL       string
-		Author    string
-		CreatedAt string `json:"created_at"`
+	Hits []AlgoliaHit
+}
+
+func GetResults(params url.Values) (*AlgoliaResponse, error) {
+	resp, err := http.Get(algoliaURL + params.Encode())
+	if err != nil {
+		return nil, errors.New("Error getting search results from Algolia")
 	}
-}
+	defer resp.Body.Close()
 
-func Prepare() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Extract out all the available query parameters
-		c.Set("req_query", c.Query("q"))
-		c.Set("req_id", c.Query("id"))
-		c.Set("req_points", c.Query("points"))
-		c.Set("req_comments", c.Query("comments"))
-		c.Set("req_search_attrs", c.DefaultQuery("search_attrs", "title"))
-		c.Set("req_count", c.DefaultQuery("count", "25"))
-		c.Set("resp_link", c.DefaultQuery("link", "url"))
-		c.Set("resp_description", c.DefaultQuery("description", "on"))
-		c.Set("resp_format", c.DefaultQuery("format", "rss"))
-
-		// Build the query string for Algolia
-		params := make(url.Values)
-
-		// Attach tags
-		params.Set("tags", c.GetString("req_tags"))
-
-		// Attach query
-		// TODO(ejd): try query[] for OR?
-		if query := c.GetString("req_query"); query != "" {
-			params.Set("query", query)
-		}
-
-		// Attach points and/or comments filter
-		var filters []string
-		if points := c.GetString("req_points"); points != "" {
-			filters = append(filters, "points>="+points)
-		}
-		if comments := c.GetString("req_comments"); comments != "" {
-			filters = append(filters, "num_comments>="+comments)
-		}
-		if len(filters) > 0 {
-			params.Set("numericFilters", strings.Join(filters, ","))
-		}
-
-		// Attach search attributes
-		if search_attrs := c.GetString("req_search_attrs"); search_attrs != "" && search_attrs != "default" {
-			params.Set("restrictSearchableAttributes", search_attrs)
-		}
-
-		// Attach count
-		// TODO(ejd): cap this at 100
-		if count := c.GetString("req_count"); count != "" {
-			params.Set("hitsPerPage", count)
-		}
-
-		c.Set("request_url", algoliaUrl+params.Encode())
-
-		// TODO(ejd): put together a smarter HTTP client
-		resp, err := http.Get(algoliaUrl + params.Encode())
-		if err != nil {
-			c.String(http.StatusBadGateway, "Error getting search results from Algolia")
-		}
-		defer resp.Body.Close()
-
-		var parsed AlgoliaResponse
-		decoder := json.NewDecoder(resp.Body)
-		if err := decoder.Decode(&parsed); err != nil {
-			c.String(http.StatusBadGateway, "Invalid JSON received from Algolia")
-		}
-
-		switch c.GetString("resp_format") {
-		case "json":
-			OutputJsonFeed(c)
-		case "atom":
-			OutputAtom(c)
-		case "rss":
-			OutputRSS(parsed, c)
-		default:
-			c.String(http.StatusBadRequest, "Format must be one of: 'json', 'atom', or 'rss'")
-		}
-
-		c.Next()
+	var parsed AlgoliaResponse
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&parsed)
+	if err != nil {
+		return nil, errors.New("Invalid JSON received from Algolia")
 	}
-}
 
-///////////////////////////////////////////////////////////////////////////
-
-func Newest(c *gin.Context) {
-	c.Set("req_tags", "(story,poll)")
-	c.Set("output_title", "Hacker News: Newest")
-	c.Set("output_link", "https://news.ycombinator.com/newest")
-}
-
-func Frontpage(c *gin.Context) {
-	c.Set("req_tags", "front_page")
-	c.Set("output_title", "Hacker News: Front Page")
-	c.Set("output_link", "https://news.ycombinator.com/")
+	return &parsed, nil
 }
 
 func main() {
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	r.GET("/newest", Newest, Prepare())
-	r.GET("/frontpage", Frontpage, Prepare())
+	r.GET("/newest", Newest)
+	r.GET("/newcomments", NewComments)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")
