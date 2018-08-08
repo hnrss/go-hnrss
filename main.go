@@ -195,6 +195,8 @@ func main() {
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	r.GET("/newest", Newest)
+	r.GET("/ask", Ask)
+	r.GET("/show", Show)
 	r.GET("/newcomments", NewComments)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {

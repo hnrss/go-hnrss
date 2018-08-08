@@ -33,6 +33,32 @@ func Newest(c *gin.Context) {
 	runner(c, sp, op)
 }
 
+func Ask(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "ask_hn"
+	op.Title = "Hacker News: Ask HN"
+	op.Link = "https://news.ycombinator.com/ask"
+
+	runner(c, sp, op)
+}
+
+func Show(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "show_hn"
+	op.Title = "Hacker News: Show HN"
+	op.Link = "https://news.ycombinator.com/show"
+
+	runner(c, sp, op)
+}
+
 func NewComments(c *gin.Context) {
 	var (
 		sp SearchParams
