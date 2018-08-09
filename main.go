@@ -60,14 +60,6 @@ func (op OutputParams) getDescription(hit AlgoliaHit) string {
 	}
 }
 
-func (op OutputParams) getTitle(hit AlgoliaHit) string {
-	if hit.isComment() {
-		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, hit.StoryTitle)
-	} else {
-		return hit.Title
-	}
-}
-
 func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 	rss := RSS{
 		Version:       "2.0",
@@ -84,7 +76,7 @@ func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 		permalink := "https://news.ycombinator.com/item?id=" + hit.ObjectID
 		createdAt, _ := time.Parse("2006-01-02T15:04:05.000Z", hit.CreatedAt)
 		item := RSSItem{
-			Title:       op.getTitle(hit),
+			Title:       hit.GetTitle(),
 			Link:        op.getURL(hit, permalink),
 			Description: op.getDescription(hit),
 			Author:      hit.Author,
@@ -167,6 +159,14 @@ func (hit AlgoliaHit) isComment() bool {
 		}
 	}
 	return false
+}
+
+func (hit AlgoliaHit) GetTitle() string {
+	if hit.isComment() {
+		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, hit.StoryTitle)
+	} else {
+		return hit.Title
+	}
 }
 
 type AlgoliaResponse struct {
