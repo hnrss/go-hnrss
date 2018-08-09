@@ -56,7 +56,7 @@ func (op OutputParams) getDescription(hit AlgoliaHit) string {
 	if hit.isComment() {
 		return hit.CommentText
 	} else {
-		return "default description"
+		return ""
 	}
 }
 
