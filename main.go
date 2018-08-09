@@ -54,11 +54,11 @@ func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 		item := RSSItem{
 			Title:       hit.GetTitle(),
 			Link:        hit.GetURL(op.LinkTo),
-			Description: hit.Description(),
+			Description: hit.GetDescription(),
 			Author:      hit.Author,
-			Comments:    hit.Permalink(),
+			Comments:    hit.GetPermalink(),
 			Published:   createdAt.Format(time.RFC1123Z),
-			Permalink:   RSSPermalink{hit.Permalink(), "false"},
+			Permalink:   RSSPermalink{hit.GetPermalink(), "false"},
 		}
 		rss.Items = append(rss.Items, item)
 	}
@@ -145,7 +145,7 @@ func (hit AlgoliaHit) GetTitle() string {
 	}
 }
 
-func (hit AlgoliaHit) Permalink() string {
+func (hit AlgoliaHit) GetPermalink() string {
 	return hackerNewsItemID + hit.ObjectID
 }
 
@@ -158,11 +158,11 @@ func (hit AlgoliaHit) GetURL(linkTo string) string {
 	case linkTo == "url" && hit.URL != "":
 		return hit.URL
 	default:
-		return hit.Permalink()
+		return hit.GetPermalink()
 	}
 }
 
-func (hit AlgoliaHit) Description() string {
+func (hit AlgoliaHit) GetDescription() string {
 	if hit.isComment() {
 		return hit.CommentText
 	} else {
