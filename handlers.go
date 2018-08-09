@@ -77,3 +77,16 @@ func NewComments(c *gin.Context) {
 
 	runner(c, sp, op)
 }
+
+func FrontPage(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "front_page"
+	op.Title = "Hacker News: Front Page"
+	op.Link = "https://news.ycombinator.com/"
+
+	runner(c, sp, op)
+}
