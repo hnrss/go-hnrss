@@ -103,3 +103,16 @@ func Polls(c *gin.Context) {
 
 	runner(c, sp, op)
 }
+
+func Jobs(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "job"
+	op.Title = "Hacker News: Jobs"
+	op.Link = "https://news.ycombinator.com/jobs"
+
+	runner(c, sp, op)
+}

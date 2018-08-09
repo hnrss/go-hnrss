@@ -114,10 +114,11 @@ func main() {
 
 	r.GET("/newest", Newest)
 	r.GET("/frontpage", FrontPage)
+	r.GET("/newcomments", NewComments)
 	r.GET("/ask", Ask)
 	r.GET("/show", Show)
 	r.GET("/polls", Polls)
-	r.GET("/newcomments", NewComments)
+	r.GET("/jobs", Jobs)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")
