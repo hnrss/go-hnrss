@@ -112,13 +112,13 @@ func main() {
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	r.GET("/newest", Newest)
-	r.GET("/frontpage", FrontPage)
-	r.GET("/newcomments", NewComments)
-	r.GET("/ask", Ask)
-	r.GET("/show", Show)
-	r.GET("/polls", Polls)
-	r.GET("/jobs", Jobs)
+	r.GET("/newest", Dispatcher)
+	r.GET("/frontpage", Dispatcher)
+	r.GET("/newcomments", Dispatcher)
+	r.GET("/ask", Dispatcher)
+	r.GET("/show", Dispatcher)
+	r.GET("/polls", Dispatcher)
+	r.GET("/jobs", Dispatcher)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")

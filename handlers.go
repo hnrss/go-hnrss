@@ -6,122 +6,74 @@ import (
 	"net/http"
 )
 
-func runner(c *gin.Context, sp SearchParams, op OutputParams) {
+// Dispatcher generates all the basic responses.
+func Dispatcher(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	// Set default tags, title, and link
+	switch c.Request.URL.Path {
+	case "/newest":
+		sp.Tags = "(story,poll)"
+		op.Title = "Hacker News: Newest"
+		op.Link = "https://news.ycombinator.com/newest"
+	case "/frontpage":
+		sp.Tags = "front_page"
+		op.Title = "Hacker News: Front Page"
+		op.Link = "https://news.ycombinator.com/"
+	case "/newcomments":
+		sp.Tags = "comment"
+		op.Title = "Hacker News: New Comments"
+		op.Link = "https://news.ycombinator.com/newcomments"
+	case "/ask":
+		sp.Tags = "ask_hn"
+		op.Title = "Hacker News: Ask HN"
+		op.Link = "https://news.ycombinator.com/ask"
+	case "/show":
+		sp.Tags = "show_hn"
+		op.Title = "Hacker News: Show HN"
+		op.Link = "https://news.ycombinator.com/shownew"
+	case "/polls":
+		sp.Tags = "poll"
+		op.Title = "Hacker News: Polls"
+		op.Link = "https://news.ycombinator.com/"
+	case "/jobs":
+		sp.Tags = "job"
+		op.Title = "Hacker News: Jobs"
+		op.Link = "https://news.ycombinator.com/jobs"
+	}
+
+	// Parse the search params
 	err := c.ShouldBindQuery(&sp)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error parsing the request")
 	}
 
+	// Tweak as needed if there was a query
+	if sp.Query != "" {
+		op.Title = fmt.Sprintf("%s (\"%s\")", op.Title, sp.Query)
+	}
+
+	// Needed to search comments
+	if sp.Query != "" && c.Request.URL.Path == "/newcomments" {
+		sp.SearchAttributes = "default"
+	}
+
+	// Make the request to Algolia
 	results, err := GetResults(sp.Values())
 	if err != nil {
-		c.String(http.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, err.Error()) // TODO(ejd): Bad Gateway instead?
 	}
 	c.Header("X-Algolia-URL", algoliaURL+sp.Values().Encode())
 
+	// Parse the output params
 	err = c.ShouldBindQuery(&op)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error parsing the request")
 	}
 
+	// Generate the response
 	op.Output(c, results)
-}
-
-func Newest(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "(story,poll)"
-	if c.Query("q") != "" {
-		op.Title = fmt.Sprintf("Hacker News: \"%s\"", c.Query("q"))
-	} else {
-		op.Title = "Hacker News: Newest"
-	}
-	op.Link = "https://news.ycombinator.com/newest"
-
-	runner(c, sp, op)
-}
-
-func Ask(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "ask_hn"
-	op.Title = "Hacker News: Ask HN"
-	op.Link = "https://news.ycombinator.com/ask"
-
-	runner(c, sp, op)
-}
-
-func Show(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "show_hn"
-	op.Title = "Hacker News: Show HN"
-	op.Link = "https://news.ycombinator.com/show"
-
-	runner(c, sp, op)
-}
-
-func NewComments(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "comment"
-	if c.Query("q") != "" {
-		sp.SearchAttributes = "default"
-		op.Title = fmt.Sprintf("Hacker News: Comments mentioning \"%s\"", c.Query("q"))
-	} else {
-		op.Title = "Hacker News: New Comments"
-	}
-	op.Link = "https://news.ycombinator.com/newcomments"
-
-	runner(c, sp, op)
-}
-
-func FrontPage(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "front_page"
-	op.Title = "Hacker News: Front Page"
-	op.Link = "https://news.ycombinator.com/"
-
-	runner(c, sp, op)
-}
-
-func Polls(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "poll"
-	op.Title = "Hacker News: Polls"
-	op.Link = "https://news.ycombinator.com/"
-
-	runner(c, sp, op)
-}
-
-func Jobs(c *gin.Context) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	sp.Tags = "job"
-	op.Title = "Hacker News: Jobs"
-	op.Link = "https://news.ycombinator.com/jobs"
-
-	runner(c, sp, op)
 }
