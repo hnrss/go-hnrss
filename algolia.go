@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"time"
@@ -19,14 +21,16 @@ type AlgoliaResponse struct {
 }
 
 type AlgoliaHit struct {
+	Tags        []string `json:"_tags"`
 	ObjectID    string
 	Title       string
 	URL         string
 	Author      string
-	CreatedAt   string   `json:"created_at"`
-	StoryTitle  string   `json:"story_title"`
-	CommentText string   `json:"comment_text"`
-	Tags        []string `json:"_tags"`
+	CreatedAt   string `json:"created_at"`
+	StoryTitle  string `json:"story_title"`
+	CommentText string `json:"comment_text"`
+	NumComments int    `json:"num_comments"`
+	Points      int    `json:"points"`
 }
 
 func (hit AlgoliaHit) isComment() bool {
@@ -67,7 +71,16 @@ func (hit AlgoliaHit) GetDescription() string {
 	if hit.isComment() {
 		return hit.CommentText
 	} else {
-		return "" // TODO(ejd)
+		var b bytes.Buffer
+		// TODO(ejd): Hide article URL if not available
+		t := template.Must(template.New("description").Parse(`
+<p>Article URL: <a href="{{ .URL }}">{{ .URL }}</a></p>
+<p>Comments URL: <a href="{{ .GetPermalink }}">{{ .GetPermalink }}</a></p>
+<p>Points: {{ .Points }}</p>
+<p># Comments: {{ .NumComments }}</p>
+`))
+		t.Execute(&b, hit)
+		return b.String()
 	}
 }
 
