@@ -116,6 +116,7 @@ func main() {
 	r.GET("/frontpage", FrontPage)
 	r.GET("/ask", Ask)
 	r.GET("/show", Show)
+	r.GET("/polls", Polls)
 	r.GET("/newcomments", NewComments)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {

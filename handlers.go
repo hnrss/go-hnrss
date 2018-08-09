@@ -90,3 +90,16 @@ func FrontPage(c *gin.Context) {
 
 	runner(c, sp, op)
 }
+
+func Polls(c *gin.Context) {
+	var (
+		sp SearchParams
+		op OutputParams
+	)
+
+	sp.Tags = "poll"
+	op.Title = "Hacker News: Polls"
+	op.Link = "https://news.ycombinator.com/"
+
+	runner(c, sp, op)
+}
