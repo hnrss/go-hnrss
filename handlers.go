@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -71,8 +72,12 @@ func NewComments(c *gin.Context) {
 	)
 
 	sp.Tags = "comment"
-	sp.SearchAttributes = "default"
-	op.Title = "Hacker News: New Comments"
+	if c.Query("q") != "" {
+		sp.SearchAttributes = "default"
+		op.Title = fmt.Sprintf("Hacker News: Comments mentioning \"%s\"", c.Query("q"))
+	} else {
+		op.Title = "Hacker News: New Comments"
+	}
 	op.Link = "https://news.ycombinator.com/newcomments"
 
 	runner(c, sp, op)
