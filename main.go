@@ -37,14 +37,6 @@ func (op OutputParams) Output(c *gin.Context, results *AlgoliaResponse) {
 	}
 }
 
-func (op OutputParams) getDescription(hit AlgoliaHit) string {
-	if hit.isComment() {
-		return hit.CommentText
-	} else {
-		return ""
-	}
-}
-
 func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 	rss := RSS{
 		Version:       "2.0",
@@ -62,7 +54,7 @@ func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 		item := RSSItem{
 			Title:       hit.GetTitle(),
 			Link:        hit.GetURL(op.LinkTo),
-			Description: op.getDescription(hit),
+			Description: hit.Description(),
 			Author:      hit.Author,
 			Comments:    hit.Permalink(),
 			Published:   createdAt.Format(time.RFC1123Z),
@@ -167,6 +159,14 @@ func (hit AlgoliaHit) GetURL(linkTo string) string {
 		return hit.URL
 	default:
 		return hit.Permalink()
+	}
+}
+
+func (hit AlgoliaHit) Description() string {
+	if hit.isComment() {
+		return hit.CommentText
+	} else {
+		return "" // TODO(ejd)
 	}
 }
 
