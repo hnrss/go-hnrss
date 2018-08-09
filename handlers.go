@@ -33,7 +33,11 @@ func Newest(c *gin.Context) {
 	)
 
 	sp.Tags = "(story,poll)"
-	op.Title = "Hacker News: Newest"
+	if c.Query("q") != "" {
+		op.Title = fmt.Sprintf("Hacker News: \"%s\"", c.Query("q"))
+	} else {
+		op.Title = "Hacker News: Newest"
+	}
 	op.Link = "https://news.ycombinator.com/newest"
 
 	runner(c, sp, op)
