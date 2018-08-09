@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -82,7 +83,7 @@ func (sp *SearchParams) Values() url.Values {
 	params := make(url.Values)
 
 	if sp.Query != "" {
-		params.Set("query", sp.Query)
+		params.Set("query", fmt.Sprintf("\"%s\"", sp.Query))
 	}
 
 	if f := sp.numericFilters(); f != "" {
