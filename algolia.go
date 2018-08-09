@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	algoliaURL = "https://hn.algolia.com/api/v1/search_by_date?"
+	hackerNewsItemID = "https://news.ycombinator.com/item?id="
+	algoliaURL       = "https://hn.algolia.com/api/v1/search_by_date?"
 )
 
 type AlgoliaResponse struct {

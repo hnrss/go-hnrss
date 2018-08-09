@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-const (
-	hackerNewsItemID = "https://news.ycombinator.com/item?id="
-)
-
 type OutputParams struct {
 	Title       string
 	Link        string
