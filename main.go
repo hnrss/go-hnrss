@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-const algoliaURL = "https://hn.algolia.com/api/v1/search_by_date?"
+const (
+	algoliaURL       = "https://hn.algolia.com/api/v1/search_by_date?"
+	hackerNewsItemID = "https://news.ycombinator.com/item?id="
+)
 
 type OutputParams struct {
 	Title       string
@@ -31,24 +34,6 @@ func (op OutputParams) Output(c *gin.Context, results *AlgoliaResponse) {
 	switch fmt {
 	case "rss":
 		op.RSS(c, results)
-	}
-}
-
-func (op OutputParams) getURL(hit AlgoliaHit, permalink string) string {
-	linkTo := op.LinkTo
-	if linkTo == "" {
-		linkTo = "url"
-	}
-
-	switch {
-	case linkTo == "url" && hit.URL != "":
-		return hit.URL
-	case linkTo == "url" && hit.URL == "":
-		return permalink
-	case linkTo == "comments":
-		return permalink
-	default:
-		return permalink
 	}
 }
 
@@ -73,16 +58,15 @@ func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 	}
 
 	for _, hit := range results.Hits {
-		permalink := "https://news.ycombinator.com/item?id=" + hit.ObjectID
 		createdAt, _ := time.Parse("2006-01-02T15:04:05.000Z", hit.CreatedAt)
 		item := RSSItem{
 			Title:       hit.GetTitle(),
-			Link:        op.getURL(hit, permalink),
+			Link:        hit.GetURL(op.LinkTo),
 			Description: op.getDescription(hit),
 			Author:      hit.Author,
-			Comments:    permalink,
+			Comments:    hit.Permalink(),
 			Published:   createdAt.Format(time.RFC1123Z),
-			Permalink:   RSSPermalink{permalink, "false"},
+			Permalink:   RSSPermalink{hit.Permalink(), "false"},
 		}
 		rss.Items = append(rss.Items, item)
 	}
@@ -166,6 +150,23 @@ func (hit AlgoliaHit) GetTitle() string {
 		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, hit.StoryTitle)
 	} else {
 		return hit.Title
+	}
+}
+
+func (hit AlgoliaHit) Permalink() string {
+	return hackerNewsItemID + hit.ObjectID
+}
+
+func (hit AlgoliaHit) GetURL(linkTo string) string {
+	if linkTo == "" {
+		linkTo = "url"
+	}
+
+	switch {
+	case linkTo == "url" && hit.URL != "":
+		return hit.URL
+	default:
+		return hit.Permalink()
 	}
 }
 
