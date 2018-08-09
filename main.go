@@ -46,18 +46,17 @@ func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
 		Webmaster:     "https://github.com/edavis/go-hnrss/issues",
 		Docs:          "https://edavis.github.io/go-hnrss/",
 		Generator:     "https://github.com/edavis/go-hnrss",
-		LastBuildDate: time.Now().UTC().Format(time.RFC1123Z),
+		LastBuildDate: Timestamp("rss", time.Now().UTC()),
 	}
 
 	for _, hit := range results.Hits {
-		createdAt, _ := time.Parse("2006-01-02T15:04:05.000Z", hit.CreatedAt)
 		item := RSSItem{
 			Title:       hit.GetTitle(),
 			Link:        hit.GetURL(op.LinkTo),
 			Description: hit.GetDescription(),
 			Author:      hit.Author,
 			Comments:    hit.GetPermalink(),
-			Published:   createdAt.Format(time.RFC1123Z),
+			Published:   Timestamp("rss", hit.GetCreatedAt()),
 			Permalink:   RSSPermalink{hit.GetPermalink(), "false"},
 		}
 		rss.Items = append(rss.Items, item)
@@ -167,6 +166,15 @@ func (hit AlgoliaHit) GetDescription() string {
 		return hit.CommentText
 	} else {
 		return "" // TODO(ejd)
+	}
+}
+
+func (hit AlgoliaHit) GetCreatedAt() time.Time {
+	rv, err := time.Parse("2006-01-02T15:04:05.000Z", hit.CreatedAt)
+	if err != nil {
+		return time.Now().UTC()
+	} else {
+		return rv
 	}
 }
 
