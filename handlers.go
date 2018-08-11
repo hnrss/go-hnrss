@@ -35,7 +35,7 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	if err != nil {
 		c.String(http.StatusBadGateway, err.Error()) // TODO(ejd): inspect error to know which HTTP type?
 	}
-	c.Header("X-Algolia-URL", algoliaURL+sp.Values().Encode())
+	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
 
 	switch op.Format {
 	case "rss":
@@ -191,6 +191,26 @@ func UserSubmitted(c *gin.Context) {
 		op.Title = fmt.Sprintf("Hacker News: %s submitted", sp.ID)
 	}
 	op.Link = "https://news.ycombinator.com/submitted?id=" + sp.ID
+
+	Generate(c, sp, op)
+}
+
+func Item(c *gin.Context) {
+	sp, op := ParseRequest(c)
+	sp.Tags = "comment,story_" + sp.ID
+
+	item, err := GetItem(sp.ID)
+	if err != nil {
+		c.String(http.StatusBadGateway, err.Error())
+	}
+
+	if sp.Query != "" {
+		sp.SearchAttributes = "default"
+		op.Title = fmt.Sprintf("Hacker News - \"%s\": \"%s\"", item.Title, sp.Query)
+	} else {
+		op.Title = fmt.Sprintf("Hacker News: New comments on \"%s\"", item.Title)
+	}
+	op.Link = "https://news.ycombinator.com/item?id=" + sp.ID
 
 	Generate(c, sp, op)
 }

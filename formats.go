@@ -33,7 +33,7 @@ type RSSItem struct {
 	Permalink   RSSPermalink `xml:"guid"`
 }
 
-func NewRSS(results *AlgoliaResponse, op *OutputParams) *RSS {
+func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 	rss := RSS{
 		Version:       "2.0",
 		Title:         op.Title,
@@ -82,7 +82,7 @@ type JSONFeedItem struct {
 	Author      string `json:"author"`
 }
 
-func NewJSONFeed(results *AlgoliaResponse, op *OutputParams) *JSONFeed {
+func NewJSONFeed(results *AlgoliaSearchResponse, op *OutputParams) *JSONFeed {
 	jf := JSONFeed{
 		Version:     "https://jsonfeed.org/version/1",
 		Title:       op.Title,

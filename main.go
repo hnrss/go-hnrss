@@ -85,6 +85,7 @@ func main() {
 	r.GET("/user", UserAll)
 	r.GET("/threads", UserThreads)
 	r.GET("/submitted", UserSubmitted)
+	r.GET("/item", Item)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")
