@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type OutputParams struct {
@@ -16,46 +15,6 @@ type OutputParams struct {
 	Description string `form:"description"`
 	LinkTo      string `form:"link"`
 	Format      string `form:"format"`
-}
-
-func (op OutputParams) Output(c *gin.Context, results *AlgoliaResponse) {
-	fmt := op.Format
-	if fmt == "" {
-		fmt = "rss"
-	}
-
-	switch fmt {
-	case "rss":
-		op.RSS(c, results)
-	}
-}
-
-func (op OutputParams) RSS(c *gin.Context, results *AlgoliaResponse) {
-	rss := RSS{
-		Version:       "2.0",
-		Title:         op.Title,
-		Link:          op.Link,
-		Description:   "Hacker News RSS",
-		Webmaster:     "https://github.com/edavis/go-hnrss/issues",
-		Docs:          "https://edavis.github.io/go-hnrss/",
-		Generator:     "https://github.com/edavis/go-hnrss",
-		LastBuildDate: Timestamp("rss", time.Now().UTC()),
-	}
-
-	for _, hit := range results.Hits {
-		item := RSSItem{
-			Title:       hit.GetTitle(),
-			Link:        hit.GetURL(op.LinkTo),
-			Description: hit.GetDescription(),
-			Author:      hit.Author,
-			Comments:    hit.GetPermalink(),
-			Published:   Timestamp("rss", hit.GetCreatedAt()),
-			Permalink:   RSSPermalink{hit.GetPermalink(), "false"},
-		}
-		rss.Items = append(rss.Items, item)
-	}
-
-	c.XML(http.StatusOK, rss)
 }
 
 type SearchParams struct {
