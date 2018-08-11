@@ -23,6 +23,7 @@ type SearchParams struct {
 	Tags             string
 	Query            string `form:"q"`
 	Points           string `form:"points"`
+	ID               string `form:"id"`
 	Comments         string `form:"comments"`
 	SearchAttributes string `form:"search_attrs"`
 	Count            string `form:"count"`
@@ -81,6 +82,9 @@ func main() {
 	r.GET("/show", ShowHN)
 	r.GET("/polls", Polls)
 	r.GET("/jobs", Jobs)
+	r.GET("/user", UserAll)
+	r.GET("/threads", UserThreads)
+	r.GET("/submitted", UserSubmitted)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")

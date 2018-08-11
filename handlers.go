@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
@@ -141,6 +142,55 @@ func Jobs(c *gin.Context) {
 		op.Title = "Hacker News: Jobs"
 	}
 	op.Link = "https://news.ycombinator.com/jobs"
+
+	Generate(c, sp, op)
+}
+
+func UserAll(c *gin.Context) {
+	sp, op := ParseRequest(c)
+
+	tags := []string{"(story,comment,poll)", "author_" + sp.ID}
+	sp.Tags = strings.Join(tags, ",")
+
+	if sp.Query != "" {
+		op.Title = fmt.Sprintf("Hacker News - %s: \"%s\"", sp.ID, sp.Query)
+	} else {
+		op.Title = fmt.Sprintf("Hacker News: %s", sp.ID)
+	}
+	op.Link = "https://news.ycombinator.com/user?id=" + sp.ID
+
+	Generate(c, sp, op)
+}
+
+func UserThreads(c *gin.Context) {
+	sp, op := ParseRequest(c)
+
+	tags := []string{"comment", "author_" + sp.ID}
+	sp.Tags = strings.Join(tags, ",")
+
+	if sp.Query != "" {
+		sp.SearchAttributes = "default"
+		op.Title = fmt.Sprintf("Hacker News - %s threads: \"%s\"", sp.ID, sp.Query)
+	} else {
+		op.Title = fmt.Sprintf("Hacker News: %s threads", sp.ID)
+	}
+	op.Link = "https://news.ycombinator.com/threads?id=" + sp.ID
+
+	Generate(c, sp, op)
+}
+
+func UserSubmitted(c *gin.Context) {
+	sp, op := ParseRequest(c)
+
+	tags := []string{"(story,poll)", "author_" + sp.ID}
+	sp.Tags = strings.Join(tags, ",")
+
+	if sp.Query != "" {
+		op.Title = fmt.Sprintf("Hacker News - %s submitted: \"%s\"", sp.ID, sp.Query)
+	} else {
+		op.Title = fmt.Sprintf("Hacker News: %s submitted", sp.ID)
+	}
+	op.Link = "https://news.ycombinator.com/submitted?id=" + sp.ID
 
 	Generate(c, sp, op)
 }
