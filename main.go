@@ -118,7 +118,7 @@ func main() {
 	r.GET("/newcomments", Newcomments)
 	r.GET("/ask", AskHN)
 	r.GET("/show", ShowHN)
-	r.GET("/polls", Dispatcher)
+	r.GET("/polls", Polls)
 	r.GET("/jobs", Dispatcher)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
