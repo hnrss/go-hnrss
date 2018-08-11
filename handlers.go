@@ -102,7 +102,7 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	if err != nil {
 		c.String(http.StatusBadGateway, err.Error()) // TODO(ejd): inspect error to know which HTTP type?
 	}
-	c.Header("X-Algolia-URL", sp.Values().Encode())
+	c.Header("X-Algolia-URL", algoliaURL+sp.Values().Encode())
 
 	switch op.Format {
 	case "rss":
