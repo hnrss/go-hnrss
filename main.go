@@ -117,7 +117,7 @@ func main() {
 	r.GET("/frontpage", Frontpage)
 	r.GET("/newcomments", Newcomments)
 	r.GET("/ask", AskHN)
-	r.GET("/show", Dispatcher)
+	r.GET("/show", ShowHN)
 	r.GET("/polls", Dispatcher)
 	r.GET("/jobs", Dispatcher)
 
