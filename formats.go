@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// <http://cyber.harvard.edu/rss/rss.html>
 type RSS struct {
 	XMLName       string    `xml:"rss"`
 	Version       string    `xml:"version,attr"`

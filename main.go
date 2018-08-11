@@ -1,5 +1,7 @@
 package main
 
+// TODO(ejd): create enums for the different formats
+
 import (
 	"fmt"
 	"github.com/gin-contrib/gzip"
