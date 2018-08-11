@@ -113,7 +113,7 @@ func main() {
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	r.GET("/newest", Dispatcher)
+	r.GET("/newest", Newest)
 	r.GET("/frontpage", Dispatcher)
 	r.GET("/newcomments", Dispatcher)
 	r.GET("/ask", Dispatcher)
