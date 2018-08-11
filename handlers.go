@@ -116,7 +116,7 @@ func Newest(c *gin.Context) {
 
 	sp.Tags = "(story,poll)"
 	if sp.Query != "" {
-		op.Title = fmt.Sprintf("Hacker News: \"%s\"", sp.Query)
+		op.Title = fmt.Sprintf("Hacker News - Newest: \"%s\"", sp.Query)
 	} else {
 		op.Title = "Hacker News: Newest"
 	}
