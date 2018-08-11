@@ -15,10 +15,6 @@ func Dispatcher(c *gin.Context) {
 
 	// Set default tags, title, and link
 	switch c.Request.URL.Path {
-	case "/ask":
-		sp.Tags = "ask_hn"
-		op.Title = "Hacker News: Ask HN"
-		op.Link = "https://news.ycombinator.com/ask"
 	case "/show":
 		sp.Tags = "show_hn"
 		op.Title = "Hacker News: Show HN"
@@ -142,6 +138,20 @@ func Newcomments(c *gin.Context) {
 		op.Title = "Hacker News: New Comments"
 	}
 	op.Link = "https://news.ycombinator.com/newcomments"
+
+	Generate(c, sp, op)
+}
+
+func AskHN(c *gin.Context) {
+	sp, op := ParseRequest(c)
+
+	sp.Tags = "ask_hn"
+	if sp.Query != "" {
+		op.Title = fmt.Sprintf("Hacker News - Ask HN: \"%s\"", sp.Query)
+	} else {
+		op.Title = "Hacker News: Ask HN"
+	}
+	op.Link = "https://news.ycombinator.com/ask"
 
 	Generate(c, sp, op)
 }
