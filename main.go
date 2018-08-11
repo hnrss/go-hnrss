@@ -114,7 +114,7 @@ func main() {
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	r.GET("/newest", Newest)
-	r.GET("/frontpage", Dispatcher)
+	r.GET("/frontpage", Frontpage)
 	r.GET("/newcomments", Dispatcher)
 	r.GET("/ask", Dispatcher)
 	r.GET("/show", Dispatcher)
