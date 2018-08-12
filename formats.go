@@ -4,10 +4,17 @@ import (
 	"time"
 )
 
+const (
+	NSDublinCore = "http://purl.org/dc/elements/1.1/"
+	NSAtom = "http://www.w3.org/2005/Atom"
+)
+
 // <http://cyber.harvard.edu/rss/rss.html>
 type RSS struct {
 	XMLName       string    `xml:"rss"`
 	Version       string    `xml:"version,attr"`
+	NSDublinCore  string    `xml:"xmlns:dc,attr"`
+	NSAtom        string    `xml:"xmlns:atom,attr"`
 	Title         string    `xml:"channel>title"`
 	Link          string    `xml:"channel>link"`
 	Description   string    `xml:"channel>description"`
@@ -36,6 +43,8 @@ type RSSItem struct {
 func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 	rss := RSS{
 		Version:       "2.0",
+		NSAtom:        NSAtom,
+		NSDublinCore:  NSDublinCore,
 		Title:         op.Title,
 		Link:          op.Link,
 		Description:   "Hacker News RSS",
