@@ -16,7 +16,7 @@ type OutputParams struct {
 	Link        string
 	Description string `form:"description"`
 	LinkTo      string `form:"link"`
-	Format      string `form:"format"`
+	Format      string
 }
 
 type SearchParams struct {
