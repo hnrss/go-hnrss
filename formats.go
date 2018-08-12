@@ -18,7 +18,6 @@ type RSS struct {
 	Title         string    `xml:"channel>title"`
 	Link          string    `xml:"channel>link"`
 	Description   string    `xml:"channel>description"`
-	Webmaster     string    `xml:"channel>webMaster"`
 	Docs          string    `xml:"channel>docs"`
 	Generator     string    `xml:"channel>generator"`
 	LastBuildDate string    `xml:"channel>lastBuildDate"`
@@ -48,7 +47,6 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 		Title:         op.Title,
 		Link:          op.Link,
 		Description:   "Hacker News RSS",
-		Webmaster:     "https://github.com/edavis/go-hnrss/issues",
 		Docs:          "https://edavis.github.io/go-hnrss/",
 		Generator:     "https://github.com/edavis/go-hnrss",
 		LastBuildDate: Timestamp("rss", time.Now().UTC()),
