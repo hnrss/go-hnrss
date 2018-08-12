@@ -23,6 +23,7 @@ func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error parsing the request")
 	}
+	op.Format = c.GetString("format")
 
 	return &sp, &op
 }

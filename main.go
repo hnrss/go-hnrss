@@ -71,11 +71,25 @@ func (sp *SearchParams) Values() url.Values {
 	return params
 }
 
+func SetFormat(fmt string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("format", fmt)
+		c.Next()
+	}
+}
+
+func registerEndpoint(r *gin.Engine, url string, fn gin.HandlerFunc) {
+	r.GET(url, SetFormat("rss"), fn)
+	r.GET(url+".rss", SetFormat("rss"), fn)
+	r.GET(url+".jsonfeed", SetFormat("jsonfeed"), fn)
+	r.GET(url+".atom", SetFormat("atom"), fn)
+}
+
 func main() {
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	r.GET("/newest", Newest)
+	registerEndpoint(r, "/newest", Newest)
 	r.GET("/frontpage", Frontpage)
 	r.GET("/newcomments", Newcomments)
 	r.GET("/ask", AskHN)
