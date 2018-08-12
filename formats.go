@@ -34,7 +34,7 @@ type RSSItem struct {
 	Title       string       `xml:"title"`
 	Description string       `xml:"description"`
 	Link        string       `xml:"link"`
-	Author      string       `xml:"author"`
+	Author      string       `xml:"dc:creator"`
 	Comments    string       `xml:"comments"`
 	Published   string       `xml:"pubDate"`
 	Permalink   RSSPermalink `xml:"guid"`
