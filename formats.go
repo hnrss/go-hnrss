@@ -6,7 +6,7 @@ import (
 
 const (
 	NSDublinCore = "http://purl.org/dc/elements/1.1/"
-	NSAtom = "http://www.w3.org/2005/Atom"
+	NSAtom       = "http://www.w3.org/2005/Atom"
 )
 
 // <http://cyber.harvard.edu/rss/rss.html>
@@ -21,7 +21,14 @@ type RSS struct {
 	Docs          string    `xml:"channel>docs"`
 	Generator     string    `xml:"channel>generator"`
 	LastBuildDate string    `xml:"channel>lastBuildDate"`
+	AtomLink      AtomLink  `xml:"channel>atom:link"`
 	Items         []RSSItem `xml:"channel>item"`
+}
+
+type AtomLink struct {
+	Reference    string `xml:"href,attr"`
+	Relationship string `xml:"rel,attr"`
+	Type         string `xml:"type,attr"`
 }
 
 type RSSPermalink struct {
@@ -50,6 +57,7 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 		Docs:          "https://edavis.github.io/go-hnrss/",
 		Generator:     "https://github.com/edavis/go-hnrss",
 		LastBuildDate: Timestamp("rss", time.Now().UTC()),
+		AtomLink:      AtomLink{op.SelfLink, "self", "application/rss+xml"},
 	}
 
 	for _, hit := range results.Hits {

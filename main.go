@@ -17,6 +17,7 @@ type OutputParams struct {
 	Description string `form:"description"`
 	LinkTo      string `form:"link"`
 	Format      string
+	SelfLink    string
 }
 
 type SearchParams struct {

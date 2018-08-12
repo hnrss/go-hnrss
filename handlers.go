@@ -24,6 +24,7 @@ func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
 		c.String(http.StatusBadRequest, "Error parsing the request")
 	}
 	op.Format = c.GetString("format")
+	op.SelfLink = c.Request.URL.String() // TODO(ejd): add scheme and host
 
 	return &sp, &op
 }
