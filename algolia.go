@@ -103,9 +103,8 @@ func (hit AlgoliaSearchHit) GetDescription() string {
 		return b.String()
 	} else {
 		var b bytes.Buffer
-		// TODO(ejd): Hide article URL if not available
 		t := template.Must(template.New("description").Parse(`
-<p>Article URL: <a href="{{ .URL }}">{{ .URL }}</a></p>
+{{ if .URL }}<p>Article URL: <a href="{{ .URL }}">{{ .URL }}</a></p>{{ end }}
 <p>Comments URL: <a href="{{ .GetPermalink }}">{{ .GetPermalink }}</a></p>
 <p>Points: {{ .Points }}</p>
 <p># Comments: {{ .NumComments }}</p>
