@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
+	"html"
 	"net/http"
 	"net/url"
+	"text/template"
 	"time"
 )
 
@@ -35,6 +36,7 @@ type AlgoliaSearchHit struct {
 	CreatedAt   string `json:"created_at"`
 	StoryTitle  string `json:"story_title"`
 	CommentText string `json:"comment_text"`
+	StoryText   string `json:"story_text"`
 	NumComments int    `json:"num_comments"`
 	Points      int    `json:"points"`
 }
@@ -46,6 +48,10 @@ func (hit AlgoliaSearchHit) isComment() bool {
 		}
 	}
 	return false
+}
+
+func (hit AlgoliaSearchHit) isSelfPost() bool {
+	return hit.StoryText != ""
 }
 
 func (hit AlgoliaSearchHit) GetTitle() string {
@@ -73,9 +79,28 @@ func (hit AlgoliaSearchHit) GetURL(linkTo string) string {
 	}
 }
 
+func buildTemplateEngine(name string) *template.Template {
+	fm := make(template.FuncMap)
+	fm["unescapeHTML"] = html.UnescapeString
+	t := template.New(name)
+	return t.Funcs(fm)
+}
+
 func (hit AlgoliaSearchHit) GetDescription() string {
 	if hit.isComment() {
 		return hit.CommentText
+	} else if hit.isSelfPost() {
+		var b bytes.Buffer
+		t := buildTemplateEngine("description")
+		t = template.Must(t.Parse(`
+<p>{{ .StoryText | unescapeHTML }}</p>
+<hr>
+<p>Comments URL: <a href="{{ .GetPermalink }}">{{ .GetPermalink }}</a></p>
+<p>Points: {{ .Points }}</p>
+<p># Comments: {{ .NumComments }}</p>
+`))
+		t.Execute(&b, hit)
+		return b.String()
 	} else {
 		var b bytes.Buffer
 		// TODO(ejd): Hide article URL if not available

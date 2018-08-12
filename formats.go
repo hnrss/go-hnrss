@@ -36,14 +36,18 @@ type RSSPermalink struct {
 	IsPermaLink string `xml:"isPermaLink,attr"`
 }
 
+type RSSDescription struct {
+	Value string `xml:",cdata"`
+}
+
 type RSSItem struct {
-	Title       string       `xml:"title"`
-	Description string       `xml:"description"`
-	Link        string       `xml:"link"`
-	Author      string       `xml:"dc:creator"`
-	Comments    string       `xml:"comments"`
-	Published   string       `xml:"pubDate"`
-	Permalink   RSSPermalink `xml:"guid"`
+	Title       string         `xml:"title"`
+	Description RSSDescription `xml:"description"`
+	Link        string         `xml:"link"`
+	Author      string         `xml:"dc:creator"`
+	Comments    string         `xml:"comments"`
+	Published   string         `xml:"pubDate"`
+	Permalink   RSSPermalink   `xml:"guid"`
 }
 
 func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
@@ -64,7 +68,7 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 		item := RSSItem{
 			Title:       hit.GetTitle(),
 			Link:        hit.GetURL(op.LinkTo),
-			Description: hit.GetDescription(),
+			Description: RSSDescription{hit.GetDescription()},
 			Author:      hit.Author,
 			Comments:    hit.GetPermalink(),
 			Published:   Timestamp("rss", hit.GetCreatedAt()),
