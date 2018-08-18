@@ -18,6 +18,7 @@ type OutputParams struct {
 	LinkTo      string `form:"link"`
 	Format      string
 	SelfLink    string
+	TopLevel    bool
 }
 
 type SearchParams struct {
@@ -101,9 +102,9 @@ func main() {
 	registerEndpoint(r, "/threads", UserThreads)
 	registerEndpoint(r, "/submitted", UserSubmitted)
 	registerEndpoint(r, "/item", Item)
-	registerEndpoint(r, "/whoishiring/jobs", HiringEmployers)
-	registerEndpoint(r, "/whoishiring/hired", HiringSeekers)
-	registerEndpoint(r, "/whoishiring/freelance", HiringFreelance)
+	registerEndpoint(r, "/whoishiring/jobs", SeekingEmployees)
+	registerEndpoint(r, "/whoishiring/hired", SeekingEmployers)
+	registerEndpoint(r, "/whoishiring/freelance", SeekingFreelance)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")

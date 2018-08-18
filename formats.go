@@ -65,6 +65,10 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 	}
 
 	for _, hit := range results.Hits {
+		if op.TopLevel && hit.StoryID != hit.ParentID {
+			continue
+		}
+
 		item := RSSItem{
 			Title:       hit.GetTitle(),
 			Link:        hit.GetURL(op.LinkTo),
@@ -109,6 +113,10 @@ func NewJSONFeed(results *AlgoliaSearchResponse, op *OutputParams) *JSONFeed {
 		Description: "Hacker News RSS",
 	}
 	for _, hit := range results.Hits {
+		if op.TopLevel && hit.StoryID != hit.ParentID {
+			continue
+		}
+
 		item := JSONFeedItem{
 			ID:          hit.GetPermalink(),
 			Title:       hit.GetTitle(),

@@ -39,6 +39,8 @@ type AlgoliaSearchHit struct {
 	StoryText   string `json:"story_text"`
 	NumComments int    `json:"num_comments"`
 	Points      int    `json:"points"`
+	StoryID     int    `json:"story_id"`
+	ParentID    int    `json:"parent_id"`
 }
 
 func (hit AlgoliaSearchHit) isComment() bool {
