@@ -82,7 +82,6 @@ func SetFormat(fmt string) gin.HandlerFunc {
 
 func registerEndpoint(r *gin.Engine, url string, fn gin.HandlerFunc) {
 	r.GET(url, SetFormat("rss"), fn)
-	r.GET(url+".rss", SetFormat("rss"), fn)
 	r.GET(url+".jsonfeed", SetFormat("jsonfeed"), fn)
 	r.GET(url+".atom", SetFormat("atom"), fn)
 }
