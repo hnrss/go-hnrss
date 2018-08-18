@@ -56,6 +56,10 @@ func (hit AlgoliaSearchHit) isSelfPost() bool {
 	return hit.StoryText != ""
 }
 
+func (hit AlgoliaSearchHit) isTopLevelComment() bool {
+	return hit.StoryID == hit.ParentID
+}
+
 func (hit AlgoliaSearchHit) GetTitle() string {
 	if hit.isComment() {
 		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, hit.StoryTitle)
