@@ -93,11 +93,16 @@ func buildTemplateEngine(name string) *template.Template {
 }
 
 func (hit AlgoliaSearchHit) GetDescription() string {
+	var (
+		b bytes.Buffer
+		t = buildTemplateEngine("default")
+	)
+
 	if hit.isComment() {
-		return hit.CommentText
+		t = template.Must(t.Parse(`
+<p>{{ .CommentText | unescapeHTML }}</p>
+`))
 	} else if hit.isSelfPost() {
-		var b bytes.Buffer
-		t := buildTemplateEngine("description")
 		t = template.Must(t.Parse(`
 <p>{{ .StoryText | unescapeHTML }}</p>
 <hr>
@@ -105,19 +110,17 @@ func (hit AlgoliaSearchHit) GetDescription() string {
 <p>Points: {{ .Points }}</p>
 <p># Comments: {{ .NumComments }}</p>
 `))
-		t.Execute(&b, hit)
-		return b.String()
 	} else {
-		var b bytes.Buffer
-		t := template.Must(template.New("description").Parse(`
+		t = template.Must(t.Parse(`
 {{ if .URL }}<p>Article URL: <a href="{{ .URL }}">{{ .URL }}</a></p>{{ end }}
 <p>Comments URL: <a href="{{ .GetPermalink }}">{{ .GetPermalink }}</a></p>
 <p>Points: {{ .Points }}</p>
 <p># Comments: {{ .NumComments }}</p>
 `))
-		t.Execute(&b, hit)
-		return b.String()
 	}
+
+	t.Execute(&b, hit)
+	return b.String()
 }
 
 func (hit AlgoliaSearchHit) GetCreatedAt() time.Time {
