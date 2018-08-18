@@ -109,7 +109,7 @@ func main() {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")
 	})
 	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusFound, "https://edavis.github.io/hnrss/")
+		c.Redirect(http.StatusFound, "https://github.com/edavis/go-hnrss")
 	})
 
 	r.Run()
