@@ -39,7 +39,7 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 		Title:         op.Title,
 		Link:          op.Link,
 		Description:   "Hacker News RSS",
-		Docs:          "https://edavis.github.io/go-hnrss/",
+		Docs:          "https://hnrss.org/",
 		Generator:     "https://github.com/edavis/go-hnrss",
 		LastBuildDate: Timestamp("rss", UTCNow()),
 		AtomLink:      AtomLink{op.SelfLink, "self", "application/rss+xml"},
