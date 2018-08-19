@@ -3,6 +3,8 @@ hnrss — Hacker News RSS
 
 hnrss provides custom, realtime RSS, Atom, and JSON feeds for [Hacker News](https://news.ycombinator.com/).
 
+| Feature | Description |
+| --- | --- |
 | **Firehose** | Every new [post](https://hnrss.org/newest) and [comment](https://hnrss.org/newcomments) as it arrives. |
 | **Front Page** | [Posts](https://hnrss.org/frontpage) appearing on the front page. |
 | **Searches** | New [posts](https://hnrss.org/newest?q=git) and [comments](https://hnrss.org/newcomments?q=django) matching a given search term. |
