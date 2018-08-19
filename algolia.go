@@ -62,9 +62,9 @@ func (hit AlgoliaSearchHit) isTopLevelComment() bool {
 
 func (hit AlgoliaSearchHit) GetTitle() string {
 	if hit.isComment() {
-		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, hit.StoryTitle)
+		return fmt.Sprintf("New comment by %s in \"%s\"", hit.Author, html.UnescapeString(hit.StoryTitle))
 	} else {
-		return hit.Title
+		return html.UnescapeString(hit.Title)
 	}
 }
 

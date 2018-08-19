@@ -9,6 +9,10 @@ const (
 	NSAtom       = "http://www.w3.org/2005/Atom"
 )
 
+type CDATA struct {
+	Value string `xml:",cdata"`
+}
+
 // Docs:
 // - RSS: http://cyber.harvard.edu/rss/rss.html
 // - Atom: https://validator.w3.org/feed/docs/atom.html
@@ -44,18 +48,14 @@ type RSSPermalink struct {
 	IsPermaLink string `xml:"isPermaLink,attr"`
 }
 
-type RSSDescription struct {
-	Value string `xml:",cdata"`
-}
-
 type RSSItem struct {
-	Title       string         `xml:"title"`
-	Description RSSDescription `xml:"description"`
-	Link        string         `xml:"link"`
-	Author      string         `xml:"dc:creator"`
-	Comments    string         `xml:"comments"`
-	Published   string         `xml:"pubDate"`
-	Permalink   RSSPermalink   `xml:"guid"`
+	Title       CDATA        `xml:"title"`
+	Description CDATA        `xml:"description"`
+	Link        string       `xml:"link"`
+	Author      string       `xml:"dc:creator"`
+	Comments    string       `xml:"comments"`
+	Published   string       `xml:"pubDate"`
+	Permalink   RSSPermalink `xml:"guid"`
 }
 
 func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
@@ -78,9 +78,9 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 		}
 
 		item := RSSItem{
-			Title:       hit.GetTitle(),
+			Title:       CDATA{hit.GetTitle()},
 			Link:        hit.GetURL(op.LinkTo),
-			Description: RSSDescription{hit.GetDescription()},
+			Description: CDATA{hit.GetDescription()},
 			Author:      hit.Author,
 			Comments:    hit.GetPermalink(),
 			Published:   Timestamp("rss", hit.GetCreatedAt()),
@@ -104,7 +104,7 @@ type Atom struct {
 
 type AtomEntry struct {
 	XMLName   string      `xml:"entry"`
-	Title     string      `xml:"title"`
+	Title     CDATA       `xml:"title"`
 	Links     []AtomLink  `xml:"link"`
 	Author    AtomPerson  `xml:"author"`
 	Content   AtomContent `xml:"content"`
@@ -140,7 +140,7 @@ func NewAtom(results *AlgoliaSearchResponse, op *OutputParams) *Atom {
 
 		entry := AtomEntry{
 			ID:        hit.GetPermalink(),
-			Title:     hit.GetTitle(),
+			Title:     CDATA{hit.GetTitle()},
 			Updated:   Timestamp("atom", hit.GetCreatedAt()),
 			Published: Timestamp("atom", hit.GetCreatedAt()),
 			Links: []AtomLink{
