@@ -4,6 +4,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 func registerEndpoint(r *gin.Engine, url string, fn gin.HandlerFunc) {
@@ -41,5 +42,9 @@ func main() {
 		c.Redirect(http.StatusFound, "https://github.com/edavis/go-hnrss")
 	})
 
-	r.Run()
+	var addr []string
+	if port := os.Getenv("PORT"); port != "" {
+		addr = append(addr, "127.0.0.1:"+port)
+	}
+	r.Run(addr...)
 }
