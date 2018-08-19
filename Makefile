@@ -3,7 +3,7 @@ src := $(wildcard *.go)
 all: go-hnrss_linux_amd64 upload
 
 go-hnrss_linux_amd64: $(src)
-	gox -osarch=linux/amd64
+	gox -osarch=linux/amd64 -parallel=1
 
 upload:
 	scp go-hnrss_linux_amd64 hnrss@hnrss.org:~
