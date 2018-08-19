@@ -9,7 +9,15 @@ const (
 	NSAtom       = "http://www.w3.org/2005/Atom"
 )
 
-// <http://cyber.harvard.edu/rss/rss.html>
+// Docs:
+// - RSS: http://cyber.harvard.edu/rss/rss.html
+// - Atom: https://validator.w3.org/feed/docs/atom.html
+// - JSONFeed: https://jsonfeed.org/version/1
+
+// Feel free to open an issue if you discover something wonky going on
+// with any of these three formats (esp. Atom and JSONFeed):
+// <https://github.com/edavis/go-hnrss/issues/new>
+
 type RSS struct {
 	XMLName       string    `xml:"rss"`
 	Version       string    `xml:"version,attr"`
@@ -27,8 +35,8 @@ type RSS struct {
 
 type AtomLink struct {
 	Reference    string `xml:"href,attr"`
-	Relationship string `xml:"rel,attr"`
-	Type         string `xml:"type,attr"`
+	Relationship string `xml:"rel,attr,omitempty"`
+	Type         string `xml:"type,attr,omitempty"`
 }
 
 type RSSPermalink struct {
@@ -84,9 +92,69 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 	return &rss
 }
 
-// ----------------------------------------------------------------------
+type Atom struct {
+	XMLName string     `xml:"feed"`
+	NS      string     `xml:"xmlns,attr"`
+	ID      string     `xml:"id"`
+	Title   string     `xml:"title"`
+	Updated string     `xml:"updated"`
+	Links   []AtomLink `xml:"link"`
+	Entries []AtomEntry
+}
 
-// <https://jsonfeed.org/version/1>
+type AtomEntry struct {
+	XMLName   string      `xml:"entry"`
+	Title     string      `xml:"title"`
+	Links     []AtomLink  `xml:"link"`
+	Author    AtomPerson  `xml:"author"`
+	Content   AtomContent `xml:"content"`
+	Updated   string      `xml:"updated"`
+	Published string      `xml:"published"`
+	ID        string      `xml:"id"`
+}
+
+type AtomPerson struct {
+	Name string `xml:"name"`
+}
+
+type AtomContent struct {
+	Type  string `xml:"type,attr"`
+	Value string `xml:",cdata"`
+}
+
+func NewAtom(results *AlgoliaSearchResponse, op *OutputParams) *Atom {
+	atom := Atom{
+		NS:      NSAtom,
+		ID:      "https://hnrss.org" + op.SelfLink,
+		Title:   op.Title,
+		Updated: Timestamp("atom", time.Now().UTC()),
+		Links: []AtomLink{
+			AtomLink{"https://hnrss.org" + op.SelfLink, "self", "application/atom+xml"},
+		},
+	}
+
+	for _, hit := range results.Hits {
+		if op.TopLevel && !hit.isTopLevelComment() {
+			continue
+		}
+
+		entry := AtomEntry{
+			ID:        hit.GetPermalink(),
+			Title:     hit.GetTitle(),
+			Updated:   Timestamp("atom", hit.GetCreatedAt()),
+			Published: Timestamp("atom", hit.GetCreatedAt()),
+			Links: []AtomLink{
+				AtomLink{hit.GetURL(op.LinkTo), "alternate", ""},
+			},
+			Author:  AtomPerson{hit.Author},
+			Content: AtomContent{"html", hit.GetDescription()},
+		}
+		atom.Entries = append(atom.Entries, entry)
+	}
+
+	return &atom
+}
+
 type JSONFeed struct {
 	Version     string         `json:"version"`
 	Title       string         `json:"title"`

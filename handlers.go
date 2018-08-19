@@ -54,6 +54,9 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	case "rss":
 		rss := NewRSS(results, op)
 		c.XML(http.StatusOK, rss)
+	case "atom":
+		atom := NewAtom(results, op)
+		c.XML(http.StatusOK, atom)
 	case "jsonfeed":
 		jsonfeed := NewJSONFeed(results, op)
 		c.JSON(http.StatusOK, jsonfeed)
