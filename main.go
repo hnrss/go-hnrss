@@ -24,6 +24,7 @@ type OutputParams struct {
 type SearchParams struct {
 	Tags             string
 	Query            string `form:"q"`
+	OptionalWords    string
 	Points           string `form:"points"`
 	ID               string `form:"id"`
 	Comments         string `form:"comments"`
@@ -46,7 +47,10 @@ func (sp *SearchParams) numericFilters() string {
 func (sp *SearchParams) Values() url.Values {
 	params := make(url.Values)
 
-	if sp.Query != "" {
+	if sp.OptionalWords != "" {
+		params.Set("query", sp.Query)
+		params.Set("optionalWords", sp.OptionalWords)
+	} else if sp.Query != "" {
 		params.Set("query", fmt.Sprintf("\"%s\"", sp.Query))
 	}
 

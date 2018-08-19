@@ -18,6 +18,17 @@ func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
 		c.String(http.StatusBadRequest, "Error parsing the request")
 	}
 
+	if strings.Contains(sp.Query, " OR ") {
+		sp.Query = strings.Replace(sp.Query, " OR ", " ", -1)
+
+		var q []string
+		for _, f := range strings.Fields(sp.Query) {
+			q = append(q, fmt.Sprintf("\"%s\"", f))
+		}
+		sp.Query = strings.Join(q, " ")
+		sp.OptionalWords = strings.Join(q, " ")
+	}
+
 	err = c.ShouldBindQuery(&op)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error parsing the request")
