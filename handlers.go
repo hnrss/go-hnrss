@@ -7,62 +7,6 @@ import (
 	"strings"
 )
 
-func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	err := c.ShouldBindQuery(&sp)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
-	}
-
-	if strings.Contains(sp.Query, " OR ") {
-		sp.Query = strings.Replace(sp.Query, " OR ", " ", -1)
-
-		var q []string
-		for _, f := range strings.Fields(sp.Query) {
-			q = append(q, fmt.Sprintf("\"%s\"", f))
-		}
-		sp.Query = strings.Join(q, " ")
-		sp.OptionalWords = strings.Join(q, " ")
-	}
-
-	err = c.ShouldBindQuery(&op)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
-	}
-	op.Format = c.GetString("format")
-	op.SelfLink = c.Request.URL.String() // TODO(ejd): add scheme and host
-
-	return &sp, &op
-}
-
-func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
-	if op.Format == "" {
-		op.Format = "rss"
-	}
-
-	results, err := GetResults(sp.Values())
-	if err != nil {
-		c.String(http.StatusBadGateway, err.Error()) // TODO(ejd): inspect error to know which HTTP type?
-	}
-	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
-
-	switch op.Format {
-	case "rss":
-		rss := NewRSS(results, op)
-		c.XML(http.StatusOK, rss)
-	case "atom":
-		atom := NewAtom(results, op)
-		c.XML(http.StatusOK, atom)
-	case "jsonfeed":
-		jsonfeed := NewJSONFeed(results, op)
-		c.JSON(http.StatusOK, jsonfeed)
-	}
-}
-
 func Newest(c *gin.Context) {
 	sp, op := ParseRequest(c)
 
