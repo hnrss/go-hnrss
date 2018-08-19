@@ -108,6 +108,9 @@ func main() {
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")
 	})
+	r.GET("/robots.txt", func(c *gin.Context) {
+		c.String(http.StatusOK, "User-agent: *\nDisallow:\n")
+	})
 	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusFound, "https://github.com/edavis/go-hnrss")
 	})
