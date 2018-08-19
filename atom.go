@@ -35,11 +35,11 @@ type AtomLink struct {
 func NewAtom(results *AlgoliaSearchResponse, op *OutputParams) *Atom {
 	atom := Atom{
 		NS:      NSAtom,
-		ID:      "https://hnrss.org" + op.SelfLink,
+		ID:      op.SelfLink,
 		Title:   op.Title,
 		Updated: Timestamp("atom", UTCNow()),
 		Links: []AtomLink{
-			AtomLink{"https://hnrss.org" + op.SelfLink, "self", "application/atom+xml"},
+			AtomLink{op.SelfLink, "self", "application/atom+xml"},
 		},
 	}
 

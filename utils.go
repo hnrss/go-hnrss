@@ -11,6 +11,7 @@ import (
 const (
 	NSDublinCore = "http://purl.org/dc/elements/1.1/"
 	NSAtom       = "http://www.w3.org/2005/Atom"
+	SiteURL      = "https://hnrss.org"
 )
 
 type CDATA struct {
@@ -59,7 +60,7 @@ func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
 		c.String(http.StatusBadRequest, "Error parsing the request")
 	}
 	op.Format = c.GetString("format")
-	op.SelfLink = c.Request.URL.String() // TODO(ejd): add scheme and host
+	op.SelfLink = SiteURL + c.Request.URL.String()
 
 	return &sp, &op
 }
