@@ -18,6 +18,10 @@ const (
 	algoliaItemURL   = "https://hn.algolia.com/api/v1/items/"
 )
 
+var algoliaClient = http.Client{
+	Timeout: 10 * time.Second,
+}
+
 type AlgoliaSearchResponse struct {
 	Hits []AlgoliaSearchHit
 }
@@ -133,7 +137,7 @@ func (hit AlgoliaSearchHit) GetCreatedAt() time.Time {
 }
 
 func GetResults(params url.Values) (*AlgoliaSearchResponse, error) {
-	resp, err := http.Get(algoliaSearchURL + params.Encode())
+	resp, err := algoliaClient.Get(algoliaSearchURL + params.Encode())
 	if err != nil {
 		return nil, errors.New("Error getting search results from Algolia")
 	}
@@ -150,7 +154,7 @@ func GetResults(params url.Values) (*AlgoliaSearchResponse, error) {
 }
 
 func GetItem(ID string) (*AlgoliaItemResponse, error) {
-	resp, err := http.Get(algoliaItemURL + ID)
+	resp, err := algoliaClient.Get(algoliaItemURL + ID)
 	if err != nil {
 		return nil, errors.New("Error getting item results from Algolia")
 	}
