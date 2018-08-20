@@ -3,7 +3,12 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
+)
+
+const (
+	HitsPerPageLimit = 100
 )
 
 type OutputParams struct {
@@ -62,7 +67,13 @@ func (sp *SearchParams) Values() url.Values {
 	}
 
 	if sp.Count != "" {
-		params.Set("hitsPerPage", sp.Count)
+		c, err := strconv.Atoi(sp.Count)
+		if err != nil {
+			c = 20
+		} else if c > HitsPerPageLimit {
+			c = HitsPerPageLimit
+		}
+		params.Set("hitsPerPage", strconv.Itoa(c))
 	}
 
 	if sp.Tags != "" {
