@@ -77,8 +77,6 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	}
 	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
 
-	c.Header("Cache-Control", "max-age=300")
-
 	if len(results.Hits) > 0 {
 		recent := results.Hits[0].GetCreatedAt()
 		c.Header("Last-Modified", Timestamp("http", recent))
