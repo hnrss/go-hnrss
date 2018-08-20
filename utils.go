@@ -24,6 +24,8 @@ func Timestamp(fmt string, input time.Time) string {
 		return input.Format(time.RFC1123Z)
 	case "atom", "jsonfeed":
 		return input.Format(time.RFC3339)
+	case "http":
+		return input.Format(http.TimeFormat)
 	default:
 		return input.Format(time.RFC1123Z)
 	}
@@ -76,6 +78,11 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
 
 	c.Header("Cache-Control", "max-age=300")
+
+	if len(results.Hits) > 0 {
+		recent := results.Hits[0].GetCreatedAt()
+		c.Header("Last-Modified", Timestamp("http", recent))
+	}
 
 	switch op.Format {
 	case "rss":
