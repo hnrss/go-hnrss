@@ -8,7 +8,9 @@ import (
 )
 
 func Newest(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "(story,poll)"
 	if sp.Query != "" {
@@ -18,11 +20,13 @@ func Newest(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/newest"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func Frontpage(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "front_page"
 	if sp.Query != "" {
@@ -32,11 +36,13 @@ func Frontpage(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func Newcomments(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "comment"
 	if sp.Query != "" {
@@ -47,11 +53,13 @@ func Newcomments(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/newcomments"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func AskHN(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "ask_hn"
 	if sp.Query != "" {
@@ -61,11 +69,13 @@ func AskHN(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/ask"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func ShowHN(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "show_hn"
 	if sp.Query != "" {
@@ -75,11 +85,13 @@ func ShowHN(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/shownew"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func Polls(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "poll"
 	if sp.Query != "" {
@@ -89,11 +101,13 @@ func Polls(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func Jobs(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "job"
 	if sp.Query != "" {
@@ -103,11 +117,13 @@ func Jobs(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/jobs"
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func UserAll(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	tags := []string{"(story,comment,poll)", "author_" + sp.ID}
 	sp.Tags = strings.Join(tags, ",")
@@ -119,11 +135,13 @@ func UserAll(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/user?id=" + sp.ID
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func UserThreads(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	tags := []string{"comment", "author_" + sp.ID}
 	sp.Tags = strings.Join(tags, ",")
@@ -136,11 +154,13 @@ func UserThreads(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/threads?id=" + sp.ID
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func UserSubmitted(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
 
 	tags := []string{"(story,poll)", "author_" + sp.ID}
 	sp.Tags = strings.Join(tags, ",")
@@ -152,11 +172,14 @@ func UserSubmitted(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/submitted?id=" + sp.ID
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }
 
 func Item(c *gin.Context) {
-	sp, op := ParseRequest(c)
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
+
 	sp.Tags = "comment,story_" + sp.ID
 
 	item, err := GetItem(sp.ID)
@@ -174,5 +197,5 @@ func Item(c *gin.Context) {
 	}
 	op.Link = "https://news.ycombinator.com/item?id=" + sp.ID
 
-	Generate(c, sp, op)
+	Generate(c, &sp, &op)
 }

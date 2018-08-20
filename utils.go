@@ -33,15 +33,12 @@ func UTCNow() time.Time {
 	return time.Now().UTC()
 }
 
-func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
-	var (
-		sp SearchParams
-		op OutputParams
-	)
-
-	err := c.ShouldBindQuery(&sp)
+func ParseRequest(c *gin.Context, sp *SearchParams, op *OutputParams) {
+	err := c.ShouldBindQuery(sp)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
+		c.Error(err)
+		c.String(http.StatusBadRequest, err.Error())
+		return
 	}
 
 	if strings.Contains(sp.Query, " OR ") {
@@ -55,14 +52,14 @@ func ParseRequest(c *gin.Context) (*SearchParams, *OutputParams) {
 		sp.OptionalWords = strings.Join(q, " ")
 	}
 
-	err = c.ShouldBindQuery(&op)
+	err = c.ShouldBindQuery(op)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Error parsing the request")
+		c.Error(err)
+		c.String(http.StatusBadRequest, err.Error())
+		return
 	}
 	op.Format = c.GetString("format")
 	op.SelfLink = SiteURL + c.Request.URL.String()
-
-	return &sp, &op
 }
 
 func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
