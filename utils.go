@@ -72,7 +72,9 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 
 	results, err := GetResults(sp.Values())
 	if err != nil {
-		c.String(http.StatusBadGateway, err.Error()) // TODO(ejd): inspect error to know which HTTP type?
+		c.Error(err)
+		c.String(http.StatusBadGateway, err.Error())
+		return
 	}
 	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
 

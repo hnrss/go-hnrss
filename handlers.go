@@ -161,7 +161,9 @@ func Item(c *gin.Context) {
 
 	item, err := GetItem(sp.ID)
 	if err != nil {
+		c.Error(err)
 		c.String(http.StatusBadGateway, err.Error())
+		return
 	}
 
 	if sp.Query != "" {

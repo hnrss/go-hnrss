@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -15,12 +16,15 @@ func HiringCommon(c *gin.Context, query string) {
 
 	results, err := GetResults(params)
 	if err != nil {
+		c.Error(err)
 		c.String(http.StatusBadGateway, err.Error())
 		return
 	}
 
 	if len(results.Hits) < 1 {
-		c.String(http.StatusBadGateway, "No results found")
+		e := errors.New("No whoishiring stories found")
+		c.Error(e)
+		c.String(http.StatusBadGateway, e.Error())
 		return
 	}
 
