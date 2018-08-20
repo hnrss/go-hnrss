@@ -75,6 +75,8 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	}
 	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
 
+	c.Header("Cache-Control", "max-age=300")
+
 	switch op.Format {
 	case "rss":
 		rss := NewRSS(results, op)
