@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -171,6 +172,34 @@ func UserSubmitted(c *gin.Context) {
 		op.Title = fmt.Sprintf("Hacker News: %s submitted", sp.ID)
 	}
 	op.Link = "https://news.ycombinator.com/submitted?id=" + sp.ID
+
+	Generate(c, &sp, &op)
+}
+
+func Replies(c *gin.Context) {
+	var sp SearchParams
+	var op OutputParams
+	ParseRequest(c, &sp, &op)
+
+	values := make(url.Values)
+	values.Set("tags", "comment,author_"+sp.ID)
+	results, err := GetResults(values)
+	if err != nil {
+		c.Error(err)
+		c.String(http.StatusBadGateway, err.Error())
+		return
+	}
+
+	var filters []string
+	for _, hit := range results.Hits {
+		filters = append(filters, "parent_id="+hit.ObjectID)
+	}
+
+	sp.Tags = "comment"
+	sp.SearchAttributes = "default"
+	sp.Filters = strings.Join(filters, " OR ")
+	op.Title = "Hacker News: Replies to " + sp.ID
+	op.Link = "https://news.ycombinator.com/threads?id=" + sp.ID
 
 	Generate(c, &sp, &op)
 }

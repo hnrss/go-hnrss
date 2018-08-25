@@ -27,6 +27,7 @@ func main() {
 	registerEndpoint(r, "/user", UserAll)
 	registerEndpoint(r, "/threads", UserThreads)
 	registerEndpoint(r, "/submitted", UserSubmitted)
+	registerEndpoint(r, "/replies", Replies)
 	registerEndpoint(r, "/item", Item)
 	registerEndpoint(r, "/whoishiring/jobs", SeekingEmployees)
 	registerEndpoint(r, "/whoishiring/hired", SeekingEmployers)

@@ -25,6 +25,7 @@ type SearchParams struct {
 	Tags             string
 	Query            string `form:"q"`
 	OptionalWords    string
+	Filters          string
 	Points           string `form:"points"`
 	ID               string `form:"id"`
 	Comments         string `form:"comments"`
@@ -74,6 +75,10 @@ func (sp *SearchParams) Values() url.Values {
 			c = HitsPerPageLimit
 		}
 		params.Set("hitsPerPage", strconv.Itoa(c))
+	}
+
+	if sp.Filters != "" {
+		params.Set("filters", sp.Filters)
 	}
 
 	if sp.Tags != "" {
