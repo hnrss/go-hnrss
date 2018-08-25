@@ -78,8 +78,18 @@ func Generate(c *gin.Context, sp *SearchParams, op *OutputParams) {
 	c.Header("X-Algolia-URL", algoliaSearchURL+sp.Values().Encode())
 
 	if len(results.Hits) > 0 {
-		recent := results.Hits[0].GetCreatedAt()
+		item := results.Hits[0]
+
+		recent := item.GetCreatedAt()
 		c.Header("Last-Modified", Timestamp("http", recent))
+
+		if c.Request.URL.Path == "/item" {
+			if sp.Query != "" {
+				op.Title = fmt.Sprintf("Hacker News - \"%s\": \"%s\"", item.StoryTitle, sp.Query)
+			} else {
+				op.Title = fmt.Sprintf("Hacker News: New comments on \"%s\"", item.StoryTitle)
+			}
+		}
 	}
 
 	switch op.Format {

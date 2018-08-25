@@ -15,7 +15,6 @@ import (
 const (
 	hackerNewsItemID = "https://news.ycombinator.com/item?id="
 	algoliaSearchURL = "https://hn.algolia.com/api/v1/search_by_date?"
-	algoliaItemURL   = "https://hn.algolia.com/api/v1/items/"
 )
 
 var algoliaClient = http.Client{
@@ -24,11 +23,6 @@ var algoliaClient = http.Client{
 
 type AlgoliaSearchResponse struct {
 	Hits []AlgoliaSearchHit
-}
-
-type AlgoliaItemResponse struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
 }
 
 type AlgoliaSearchHit struct {
@@ -142,23 +136,6 @@ func GetResults(params url.Values) (*AlgoliaSearchResponse, error) {
 	defer resp.Body.Close()
 
 	var parsed AlgoliaSearchResponse
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&parsed)
-	if err != nil {
-		return nil, errors.New("Invalid JSON received from Algolia")
-	}
-
-	return &parsed, nil
-}
-
-func GetItem(ID string) (*AlgoliaItemResponse, error) {
-	resp, err := algoliaClient.Get(algoliaItemURL + ID)
-	if err != nil {
-		return nil, errors.New("Error getting item results from Algolia")
-	}
-	defer resp.Body.Close()
-
-	var parsed AlgoliaItemResponse
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&parsed)
 	if err != nil {

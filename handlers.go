@@ -210,20 +210,10 @@ func Item(c *gin.Context) {
 	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "comment,story_" + sp.ID
+	sp.SearchAttributes = "default"
 
-	item, err := GetItem(sp.ID)
-	if err != nil {
-		c.Error(err)
-		c.String(http.StatusBadGateway, err.Error())
-		return
-	}
-
-	if sp.Query != "" {
-		sp.SearchAttributes = "default"
-		op.Title = fmt.Sprintf("Hacker News - \"%s\": \"%s\"", item.Title, sp.Query)
-	} else {
-		op.Title = fmt.Sprintf("Hacker News: New comments on \"%s\"", item.Title)
-	}
+	// op.Title is set inside Generate to avoid the overhead of a
+	// separate HTTP request to obtain the title.
 	op.Link = "https://news.ycombinator.com/item?id=" + sp.ID
 
 	Generate(c, &sp, &op)
