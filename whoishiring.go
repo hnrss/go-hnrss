@@ -32,11 +32,11 @@ func HiringCommon(c *gin.Context, query string) {
 	var op OutputParams
 	ParseRequest(c, &sp, &op)
 
-	sp.Tags = "comment,story_" + results.Hits[0].ObjectID
+	sp.Tags = "comment"
+	sp.Filters = "parent_id=" + results.Hits[0].ObjectID
 	sp.SearchAttributes = "default"
 	op.Title = results.Hits[0].Title
 	op.Link = "https://news.ycombinator.com/item?id=" + results.Hits[0].ObjectID
-	op.TopLevel = true
 
 	Generate(c, &sp, &op)
 }
