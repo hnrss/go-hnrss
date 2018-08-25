@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"strconv"
 )
 
 func Newest(c *gin.Context) {
@@ -181,25 +182,35 @@ func Replies(c *gin.Context) {
 	var op OutputParams
 	ParseRequest(c, &sp, &op)
 
-	values := make(url.Values)
-	values.Set("tags", "comment,author_"+sp.ID)
-	results, err := GetResults(values)
-	if err != nil {
-		c.Error(err)
-		c.String(http.StatusBadGateway, err.Error())
-		return
-	}
-
-	var filters []string
-	for _, hit := range results.Hits {
-		filters = append(filters, "parent_id="+hit.ObjectID)
-	}
-
 	sp.Tags = "comment"
 	sp.SearchAttributes = "default"
-	sp.Filters = strings.Join(filters, " OR ")
-	op.Title = "Hacker News: Replies to " + sp.ID
-	op.Link = "https://news.ycombinator.com/threads?id=" + sp.ID
+
+	// If ID is a number, look for comments with a parent_id equal to the ID.
+	// If ID is not a number, assume it is an author username and grab replies to their comments.
+	_, err := strconv.Atoi(sp.ID)
+	if err == nil {
+		sp.Filters = "parent_id=" + sp.ID
+		op.Title = "Hacker News: Replies to item #" + sp.ID
+		op.Link = "https://news.ycombinator.com/item?id=" + sp.ID
+	} else {
+		values := make(url.Values)
+		values.Set("tags", "comment,author_"+sp.ID)
+		results, err := GetResults(values)
+		if err != nil {
+			c.Error(err)
+			c.String(http.StatusBadGateway, err.Error())
+			return
+		}
+
+		var filters []string
+		for _, hit := range results.Hits {
+			filters = append(filters, "parent_id="+hit.ObjectID)
+		}
+
+		sp.Filters = strings.Join(filters, " OR ")
+		op.Title = "Hacker News: Replies to " + sp.ID
+		op.Link = "https://news.ycombinator.com/threads?id=" + sp.ID
+	}
 
 	Generate(c, &sp, &op)
 }
