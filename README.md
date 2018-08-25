@@ -1,7 +1,7 @@
 Hacker News RSS (hnrss)
 ========================
 
-hnrss provides custom, realtime RSS feeds for [Hacker News][].
+hnrss provides custom, realtime [RSS][] feeds for [Hacker News][].
 
 Here is a brief overview of the features available in hnrss:
 
@@ -21,4 +21,5 @@ Here is a brief overview of the features available in hnrss:
 
 For complete documentation, please visit the [project page](https://hnrss.org/).
 
+[RSS]: http://cyber.harvard.edu/rss/rss.html
 [Hacker News]: https://news.ycombinator.com/
