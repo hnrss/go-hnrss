@@ -44,10 +44,6 @@ func NewAtom(results *AlgoliaSearchResponse, op *OutputParams) *Atom {
 	}
 
 	for _, hit := range results.Hits {
-		if op.TopLevel && !hit.isTopLevelComment() {
-			continue
-		}
-
 		entry := AtomEntry{
 			ID:        hit.GetPermalink(),
 			Title:     CDATA{hit.GetTitle()},

@@ -46,10 +46,6 @@ func NewRSS(results *AlgoliaSearchResponse, op *OutputParams) *RSS {
 	}
 
 	for _, hit := range results.Hits {
-		if op.TopLevel && !hit.isTopLevelComment() {
-			continue
-		}
-
 		item := RSSItem{
 			Title:       CDATA{hit.GetTitle()},
 			Link:        hit.GetURL(op.LinkTo),

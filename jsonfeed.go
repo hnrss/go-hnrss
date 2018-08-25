@@ -27,10 +27,6 @@ func NewJSONFeed(results *AlgoliaSearchResponse, op *OutputParams) *JSONFeed {
 		Description: "Hacker News RSS",
 	}
 	for _, hit := range results.Hits {
-		if op.TopLevel && !hit.isTopLevelComment() {
-			continue
-		}
-
 		item := JSONFeedItem{
 			ID:          hit.GetPermalink(),
 			Title:       hit.GetTitle(),
