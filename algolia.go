@@ -81,10 +81,9 @@ func (hit AlgoliaSearchHit) GetURL(linkTo string) string {
 		linkTo = "url"
 	}
 
-	switch {
-	case linkTo == "url" && hit.URL != "":
+	if linkTo == "url" && hit.URL != "" {
 		return hit.URL
-	default:
+	} else {
 		return hit.GetPermalink()
 	}
 }
