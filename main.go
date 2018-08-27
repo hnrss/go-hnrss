@@ -43,6 +43,7 @@ func main() {
 	registerEndpoint(r, "/whoishiring/jobs", SeekingEmployees)
 	registerEndpoint(r, "/whoishiring/hired", SeekingEmployers)
 	registerEndpoint(r, "/whoishiring/freelance", SeekingFreelance)
+	registerEndpoint(r, "/whoishiring", SeekingAll)
 
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "https://news.ycombinator.com/favicon.ico")

@@ -6,13 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func HiringCommon(c *gin.Context, query string) {
 	params := make(url.Values)
-	params.Set("query", fmt.Sprintf("\"%s\"", query))
+	if query != "" {
+		params.Set("query", fmt.Sprintf("\"%s\"", query))
+		params.Set("hitsPerPage", "1")
+	}
 	params.Set("tags", "story,author_whoishiring")
-	params.Set("hitsPerPage", "1")
 
 	results, err := GetResults(params)
 	if err != nil {
@@ -33,7 +36,15 @@ func HiringCommon(c *gin.Context, query string) {
 	ParseRequest(c, &sp, &op)
 
 	sp.Tags = "comment"
-	sp.Filters = "parent_id=" + results.Hits[0].ObjectID
+	if query != "" {
+		sp.Filters = "parent_id=" + results.Hits[0].ObjectID
+	} else {
+		var filters []string
+		for _, hit := range results.Hits {
+			filters = append(filters, "parent_id="+hit.ObjectID)
+		}
+		sp.Filters = strings.Join(filters, " OR ")
+	}
 	sp.SearchAttributes = "default"
 	op.Title = results.Hits[0].Title
 	op.Link = "https://news.ycombinator.com/item?id=" + results.Hits[0].ObjectID
@@ -51,4 +62,8 @@ func SeekingEmployers(c *gin.Context) {
 
 func SeekingFreelance(c *gin.Context) {
 	HiringCommon(c, "Ask HN: Freelancer? Seeking freelancer?")
+}
+
+func SeekingAll(c *gin.Context) {
+	HiringCommon(c, "")
 }
