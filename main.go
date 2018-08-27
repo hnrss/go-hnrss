@@ -1,10 +1,20 @@
 package main
 
 import (
-	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
+	"context"
+	"flag"
+	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
+
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	bindAddr = flag.String("bind", "127.0.0.1:9000", "HOST:PORT")
 )
 
 func registerEndpoint(r *gin.Engine, url string, fn gin.HandlerFunc) {
@@ -43,9 +53,28 @@ func main() {
 		c.Redirect(http.StatusFound, "https://edavis.github.io/hnrss/")
 	})
 
-	var addr []string
-	if port := os.Getenv("PORT"); port != "" {
-		addr = append(addr, "127.0.0.1:"+port)
+	flag.Parse()
+
+	srv := &http.Server{
+		Addr:    *bindAddr,
+		Handler: r,
 	}
-	r.Run(addr...)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("server shutdown: %s\n", err)
+	}
+	log.Println("Server exiting")
 }
