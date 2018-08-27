@@ -1,8 +1,6 @@
 Hacker News RSS (hnrss)
 ========================
 
-(under active development, not publicly accessible as of August 25, 2018.)
-
 hnrss provides custom, realtime [RSS][] feeds for [Hacker News][].
 
 Here is a brief overview of the features available in hnrss:
