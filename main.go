@@ -15,6 +15,7 @@ import (
 
 var (
 	bindAddr = flag.String("bind", "127.0.0.1:9000", "HOST:PORT")
+	buildString string
 )
 
 func registerEndpoint(r *gin.Engine, url string, fn gin.HandlerFunc) {
